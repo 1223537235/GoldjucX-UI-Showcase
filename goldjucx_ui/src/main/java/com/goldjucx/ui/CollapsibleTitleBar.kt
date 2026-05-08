@@ -133,14 +133,14 @@ fun CollapsibleTitleBar(
                         style = HazeStyle(
                             backgroundColor = backgroundColor,
                             tint = HazeTint(backgroundColor.copy(alpha = 0.78f)),
-                            blurRadius = 20.dp,
+                            blurRadius = 36.dp,
                             noiseFactor = 0f
                         )
                     ) {
                         progressive = HazeProgressive.verticalGradient(
                             startIntensity = 1f,
                             endIntensity = 0f,
-                            easing = androidx.compose.animation.core.CubicBezierEasing(0.95f, 0.1f, 0.9f, 1f)
+                            easing = androidx.compose.animation.core.CubicBezierEasing(0.85f, 0.0f, 0.8f, 1f)
                         )
                     }
             )

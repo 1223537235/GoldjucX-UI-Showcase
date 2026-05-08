@@ -30,6 +30,43 @@ android {
     }
 }
 
+// ─── 自动从原项目同步 demo 代码和资源 ───
+val sourceProject = file("/Users/gaojiaxiang/Downloads/手机管家_Demo")
+
+tasks.register("syncFromSource") {
+    val srcKt = sourceProject.resolve("app/src/main/java/com/miui/peepguard/ui/screens/UIShowcaseScreen.kt")
+    val dstKt = file("src/main/java/com/goldjucx/showcase/ui/screens/UIShowcaseScreen.kt")
+    val srcStrings = sourceProject.resolve("app/src/main/res/values/strings_ui_showcase.xml")
+    val dstStrings = file("src/main/res/values/strings_ui_showcase.xml")
+    val srcDrawable = sourceProject.resolve("app/src/main/res/drawable")
+    val dstDrawable = file("src/main/res/drawable")
+
+    doLast {
+        // 同步 UIShowcaseScreen.kt（替换包名）
+        if (srcKt.exists()) {
+            dstKt.parentFile.mkdirs()
+            dstKt.writeText(
+                srcKt.readText()
+                    .replace("package com.miui.peepguard.ui.screens", "package com.goldjucx.showcase.ui.screens")
+                    .replace("import com.miui.peepguard.R", "import com.goldjucx.showcase.R")
+                    .replace("import com.miui.peepguard.ui.theme.OnSurfaceQuaternary", "import com.goldjucx.showcase.ui.theme.OnSurfaceQuaternary")
+            )
+        }
+        // 同步 strings
+        if (srcStrings.exists()) {
+            srcStrings.copyTo(dstStrings, overwrite = true)
+        }
+        // 同步 drawable（只复制 ic_* 和 illustration_*）
+        srcDrawable.listFiles()?.filter {
+            it.name.startsWith("ic_") || it.name.startsWith("illustration_") || it.name.startsWith("bg_")
+        }?.forEach { it.copyTo(dstDrawable.resolve(it.name), overwrite = true) }
+    }
+}
+
+tasks.matching { it.name == "preBuild" }.configureEach {
+    dependsOn("syncFromSource")
+}
+
 dependencies {
     implementation(project(":goldjucx_ui"))
     implementation(platform("androidx.compose:compose-bom:2025.01.01"))

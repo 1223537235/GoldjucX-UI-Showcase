@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- ic_island_eye 原始 viewBox 0 0 22 22，缩放3x 居中到108x108 -->
+    <!-- offset: (108-66)/2 = 21, scale: 3x -->
+    <group
+        android:translateX="21"
+        android:translateY="21"
+        android:scaleX="3"
+        android:scaleY="3">
+        <path
+            android:fillColor="#3482FF"
+            android:fillType="evenOdd"
+            android:pathData="M11.144,3.663C6.7,3.663 2.995,6.424 1.346,10.055C1.076,10.649 1.076,11.332 1.347,11.926C3.007,15.563 6.744,18.337 11.144,18.337C15.545,18.337 19.28,15.563 20.94,11.926C21.211,11.332 21.211,10.649 20.941,10.055C19.292,6.425 15.588,3.663 11.144,3.663ZM11.144,5.356C14.863,5.356 17.999,7.672 19.4,10.755C19.467,10.904 19.467,11.075 19.4,11.223C17.987,14.318 14.817,16.644 11.144,16.644C7.472,16.644 4.3,14.318 2.887,11.223C2.82,11.075 2.82,10.904 2.887,10.755C4.288,7.671 7.426,5.356 11.144,5.356Z" />
+        <path
+            android:fillColor="#3482FF"
+            android:pathData="M11.144,6.742C13.495,6.742 15.402,8.649 15.402,11C15.402,13.351 13.495,15.258 11.144,15.258C8.793,15.258 6.886,13.351 6.886,11C6.886,8.649 8.793,6.742 11.144,6.742Z" />
+    </group>
+</vector>

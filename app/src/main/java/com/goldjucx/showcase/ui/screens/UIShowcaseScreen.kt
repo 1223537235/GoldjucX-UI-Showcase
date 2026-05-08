@@ -33,7 +33,7 @@ import com.goldjucx.showcase.ui.theme.OnSurfaceQuaternary
 import kotlinx.coroutines.launch
 
 @Composable
-fun UIShowcaseScreen(onBack: () -> Unit, onNavigateToDemo: (String) -> Unit) {
+fun UIShowcaseScreen(onBack: (() -> Unit)? = null, onNavigateToDemo: (String) -> Unit) {
     data class DemoItem(val title: String, val subtitle: String, val route: String)
 
     val pageTemplates = listOf(
@@ -1102,6 +1102,7 @@ fun DemoCommonComponents(onBack: () -> Unit) {
     var segTabSlider by remember { mutableFloatStateOf(1f / 3f) }
     val segTabCount = 2 + (segTabSlider * 3f + 0.5f).toInt().coerceIn(0, 3)
     var segmentIndex by remember { mutableIntStateOf(0) }
+    var segGlassMode by remember { mutableStateOf(false) }
 
     // GoldjucXSwitch config
     var switchChecked by remember { mutableStateOf(true) }
@@ -1247,7 +1248,16 @@ fun DemoCommonComponents(onBack: () -> Unit) {
                 SegmentedTabBar(
                     tabs = activeSegTabs,
                     selectedIndex = segmentIndex,
-                    onTabSelected = { segmentIndex = it }
+                    onTabSelected = { segmentIndex = it },
+                    glassMode = segGlassMode
+                )
+            }
+            SettingsCard {
+                SettingsSwitchRow(
+                    title = "Glass 模式",
+                    subtitle = "glassMode",
+                    checked = segGlassMode,
+                    onCheckedChange = { segGlassMode = it }
                 )
             }
             SliderSettingSection(
@@ -1350,7 +1360,6 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .height(360.dp)
                     .clip(RoundedCornerShape(24.dp))
             ) {
                 // 液态玻璃 shader 层（背景 + 玻璃区域，文字不放在这里）
@@ -1358,33 +1367,13 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                     material = material,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // 彩色渐变背景 + 示例元素
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(
-                                        Color(0xFF1A237E),
-                                        Color(0xFF7B1FA2),
-                                        Color(0xFFE65100),
-                                        Color(0xFFF9A825)
-                                    )
-                                )
-                            )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 24.dp, start = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(18.dp)
-                        ) {
-                            LiquidGlassSampleRow(Color(0xFFEF5350), "ABC #1")
-                            LiquidGlassSampleRow(Color(0xFF4FC3F7), "XYZ #2")
-                            LiquidGlassSampleRow(Color(0xFF76FF03), "123 #3")
-                            LiquidGlassSampleRow(Color(0xFFFFC107), "文字 #4")
-                        }
-                    }
+                    // 底板图片（尺寸跟随图片比例）
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(R.drawable.bg_liquid_glass),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(),
+                        contentScale = androidx.compose.ui.layout.ContentScale.FillWidth
+                    )
 
                     // 玻璃面板（只定义玻璃区域，不放文字）
                     LiquidGlass(
@@ -1441,18 +1430,16 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
 
             // 材质预设选择
             SettingsSectionTitle("材质预设")
-            SettingsCard {
-                Column(Modifier.padding(horizontal = 16.dp, vertical = 14.dp)) {
-                    SegmentedTabBar(
-                        tabs = listOf("Thin", "Regular", "Thick", "Custom"),
-                        selectedIndex = presetIndex,
-                        onTabSelected = { idx ->
-                            presetIndex = idx
-                            if (idx < 3) syncFromPreset(presets[idx])
-                        }
-                    )
-                }
-            }
+            SegmentedTabBar(
+                tabs = listOf("Thin", "Regular", "Thick", "Custom"),
+                selectedIndex = presetIndex,
+                onTabSelected = { idx ->
+                    presetIndex = idx
+                    if (idx < 3) syncFromPreset(presets[idx])
+                },
+                glassMode = true,
+                glassMaterial = material
+            )
 
             Spacer(Modifier.height(16.dp))
 
@@ -1572,23 +1559,3 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
     }
 }
 
-@Composable
-private fun LiquidGlassSampleRow(color: Color, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(color)
-        )
-        Spacer(Modifier.width(14.dp))
-        Text(
-            text,
-            style = TextStyle(
-                fontSize = 20.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-        )
-    }
-}

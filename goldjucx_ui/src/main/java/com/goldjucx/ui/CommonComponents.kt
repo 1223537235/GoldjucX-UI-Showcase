@@ -290,37 +290,97 @@ fun SecondaryButton(
     }
 }
 
-/** GoldjucX 分段选择器 */
+/** GoldjucX 分段选择器，glassMode=true 时选中态用液态玻璃 */
 @Composable
 fun SegmentedTabBar(
     tabs: List<String>,
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    glassMode: Boolean = false,
+    glassMaterial: LiquidGlassMaterial = LiquidGlassMaterial.Thin
 ) {
     val haptic = rememberHaptic()
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(GoldjucXColors.tertiaryContainer)
-            .padding(4.dp)
-    ) {
-        tabs.forEachIndexed { index, title ->
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (selectedIndex == index) Color.White else Color.Transparent)
-                    .clickable { haptic(GoldjucXHaptic.GEAR_HEAVY); onTabSelected(index) }
-                    .padding(vertical = 6.dp),
-                contentAlignment = Alignment.Center
+
+    if (!glassMode) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(GoldjucXColors.tertiaryContainer)
+                .padding(4.dp)
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (selectedIndex == index) Color.White else Color.Transparent)
+                        .clickable { haptic(GoldjucXHaptic.GEAR_HEAVY); onTabSelected(index) }
+                        .padding(vertical = 6.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        title, fontSize = 14.sp,
+                        color = if (selectedIndex == index) GoldjucXColors.onSurface else GoldjucXColors.onSurfaceTertiary
+                    )
+                }
+            }
+        }
+    } else {
+        val tabCount = tabs.size
+        val animatedIndex = animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
+            animationSpec = spring(dampingRatio = 0.8f, stiffness = 300f),
+            label = "glassTab"
+        )
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp)
+                .height(40.dp)
+                .clip(RoundedCornerShape(12.dp))
+        ) {
+            // Shader 层
+            LiquidGlassScene(
+                material = glassMaterial,
+                modifier = Modifier.fillMaxSize()
             ) {
-                Text(
-                    title, fontSize = 14.sp,
-                    color = if (selectedIndex == index) GoldjucXColors.onSurface else GoldjucXColors.onSurfaceTertiary
-                )
+                // 背景
+                Box(Modifier.fillMaxSize().background(GoldjucXColors.tertiaryContainer))
+                // 玻璃滑块
+                LiquidGlass(
+                    cornerRadius = 10.dp,
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .fillMaxHeight()
+                        .fillMaxWidth(1f / tabCount)
+                        .graphicsLayer {
+                            translationX = animatedIndex.value * size.width
+                        }
+                ) {}
+            }
+            // 文字覆盖层
+            Row(Modifier.fillMaxSize().padding(4.dp)) {
+                tabs.forEachIndexed { index, title ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { haptic(GoldjucXHaptic.GEAR_HEAVY); onTabSelected(index) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            title, fontSize = 14.sp,
+                            color = if (selectedIndex == index) GoldjucXColors.onSurface else GoldjucXColors.onSurfaceTertiary
+                        )
+                    }
+                }
             }
         }
     }

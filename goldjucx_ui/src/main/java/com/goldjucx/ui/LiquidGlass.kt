@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -41,7 +41,7 @@ import kotlin.math.sin
  * - [Crystal]  — 水晶玻璃（低模糊 + 强折射 + 高饱和，iOS 26 Liquid Glass 风格）
  */
 data class LiquidGlassMaterial(
-    val blurRadius: Float = 24f,
+    val blurRadius: Float = 40f,
     val saturation: Float = 1.9f,
     val tintStrength: Float = 0.12f,
     val refractionStrength: Float = 35f,
@@ -54,19 +54,21 @@ data class LiquidGlassMaterial(
 ) {
     companion object {
         val Thin = LiquidGlassMaterial(
-            blurRadius = 12f, tintStrength = 0.06f, saturation = 1.5f,
+            blurRadius = 24f, tintStrength = 0.06f, saturation = 1.5f,
             refractionStrength = 25f, specularIntensity = 0.4f
         )
 
-        val Regular = LiquidGlassMaterial()
+        val Regular = LiquidGlassMaterial(
+            blurRadius = 40f
+        )
 
         val Thick = LiquidGlassMaterial(
-            blurRadius = 45f, tintStrength = 0.24f, saturation = 1.6f,
+            blurRadius = 64f, tintStrength = 0.24f, saturation = 1.6f,
             refractionStrength = 40f
         )
 
         val Crystal = LiquidGlassMaterial(
-            blurRadius = 6f, tintStrength = 0.04f, saturation = 2.2f,
+            blurRadius = 16f, tintStrength = 0.04f, saturation = 2.2f,
             refractionStrength = 55f, specularIntensity = 0.85f,
             specularSharpness = 10f, brightnessBoost = 1.05f
         )
@@ -136,6 +138,8 @@ private data class GlassInfo(val rect: Rect, val cornerRadiusPx: Float)
 
 private class LiquidGlassSceneState {
     var sceneSize by mutableStateOf(IntSize.Zero)
+    var sceneOffsetX by mutableFloatStateOf(0f)
+    var sceneOffsetY by mutableFloatStateOf(0f)
     val glasses = mutableStateMapOf<Any, GlassInfo>()
 }
 
@@ -144,7 +148,13 @@ private class LiquidGlassSceneScopeImpl(
     private val state: LiquidGlassSceneState
 ) : LiquidGlassSceneScope, BoxScope by boxScope {
     override fun registerGlass(id: Any, rect: Rect, cornerRadiusPx: Float) {
-        state.glasses[id] = GlassInfo(rect, cornerRadiusPx)
+        val localRect = Rect(
+            rect.left - state.sceneOffsetX,
+            rect.top - state.sceneOffsetY,
+            rect.right - state.sceneOffsetX,
+            rect.bottom - state.sceneOffsetY
+        )
+        state.glasses[id] = GlassInfo(localRect, cornerRadiusPx)
     }
     override fun unregisterGlass(id: Any) {
         state.glasses.remove(id)
@@ -163,7 +173,12 @@ private fun LiquidGlassSceneImpl(
 
     Box(
         modifier = modifier
-            .onSizeChanged { state.sceneSize = it }
+            .onGloballyPositioned { coords ->
+                val pos = coords.positionInRoot()
+                state.sceneOffsetX = pos.x
+                state.sceneOffsetY = pos.y
+                state.sceneSize = coords.size
+            }
             .graphicsLayer {
                 val sz = state.sceneSize
                 val glass = state.glasses.values.firstOrNull()

@@ -44,6 +44,8 @@ fun GlassBottomBar(
     onTabSelected: (Int) -> Unit,
     hazeState: HazeState? = null,
     hazeStyle: HazeStyle? = null,
+    liquidGlass: Boolean = false,
+    liquidGlassMaterial: LiquidGlassMaterial = LiquidGlassMaterial.Thin,
     modifier: Modifier = Modifier
 ) {
     require(tabs.isNotEmpty())

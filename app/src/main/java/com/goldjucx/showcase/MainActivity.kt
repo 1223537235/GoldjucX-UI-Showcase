@@ -41,7 +41,7 @@ private fun ShowcaseApp() {
     ) {
         composable("ui_showcase") {
             UIShowcaseScreen(
-                onBack = { navController.popBackStack() },
+                onBack = null,
                 onNavigateToDemo = { navController.navigate(it) }
             )
         }
