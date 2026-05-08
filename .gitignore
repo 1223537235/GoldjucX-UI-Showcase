@@ -1,0 +1,12 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+/build
+/app/build
+/goldjucx_ui/build
+*.hprof
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
