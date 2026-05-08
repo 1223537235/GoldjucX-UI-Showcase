@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- CollapsibleTitleBar -->
+    <string name="titlebar_back">返回</string>
+
+    <!-- CommonComponents -->
+    <string name="common_back">返回</string>
+
+    <!-- GoldjucXDialog defaults -->
+    <string name="dialog_default_confirm">确定</string>
+    <string name="dialog_default_dismiss">取消</string>
+
+    <!-- SettingsLayout -->
+    <string name="settings_cancel">取消</string>
+    <string name="settings_selected">已选中</string>
+    <string name="settings_stat_unit">次</string>
+</resources>
