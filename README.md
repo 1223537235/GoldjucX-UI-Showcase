@@ -1,6 +1,13 @@
+
+
+
+
 # GoldjucX-UI-Showcase
 
 GoldjucX_UI 组件库交互式展示应用。Clone 后直接编译运行，即可体验所有组件效果。
+
+https://github.com/user-attachments/assets/5ad53a2e-4703-4c49-b655-032e12450dec
+
 
 ## 快速开始
 
