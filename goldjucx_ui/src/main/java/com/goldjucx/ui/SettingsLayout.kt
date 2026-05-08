@@ -1099,6 +1099,7 @@ fun SettingsPage(
     trailingContent: @Composable (() -> Unit)? = null,  // 标题栏右侧按钮
     tabs: List<GlassTab>? = null,                       // Tab 栏（2-5个），null = 普通单页
     tabBarStyle: dev.chrisbanes.haze.HazeStyle? = null, // Tab 栏材质，null = 内置默认
+    tabBarLiquidGlass: Boolean = false,                 // Tab 栏液态玻璃指示器
     backgroundColor: Color = GoldjucXColors.surfaceLow,
     content: @Composable ColumnScope.(page: Int) -> Unit
 ) {
@@ -1147,20 +1148,60 @@ fun SettingsPage(
                 )
             } else 0.dp
 
-            androidx.compose.foundation.pager.HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .hazeSource(state = hazeState)
-            ) { page ->
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollStates[page])
-                        .padding(top = titleBarHeight)
+            if (tabBarLiquidGlass) {
+                // 液态玻璃：页面内容在 Scene 内，bar 位置放 Glass 标记
+                val tabBarWidth = (tabs.size * 82 + 12).dp
+                val tabBarHeight = 66.dp
+                LiquidGlassScene(
+                    material = LiquidGlassDefaults.material,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    content(page)
-                    Spacer(Modifier.height(100.dp))
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .hazeSource(state = hazeState)
+                    ) {
+                        androidx.compose.foundation.pager.HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize()
+                        ) { page ->
+                            Column(
+                                Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(scrollStates[page])
+                                    .padding(top = titleBarHeight)
+                            ) {
+                                content(page)
+                                Spacer(Modifier.height(100.dp))
+                            }
+                        }
+                    }
+                    // Glass 区域标记（和 tab bar 位置/大小一致）
+                    LiquidGlass(
+                        cornerRadius = 36.dp,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
+                            .width(tabBarWidth)
+                            .height(tabBarHeight)
+                    ) {}
+                }
+            } else {
+                androidx.compose.foundation.pager.HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .hazeSource(state = hazeState)
+                ) { page ->
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollStates[page])
+                            .padding(top = titleBarHeight)
+                    ) {
+                        content(page)
+                        Spacer(Modifier.height(100.dp))
+                    }
                 }
             }
 
@@ -1214,7 +1255,8 @@ fun SettingsPage(
                     selectedTab = selectedTab,
                     onTabSelected = { scope.launch { pagerState.animateScrollToPage(it) } },
                     hazeState = hazeState,
-                    hazeStyle = tabBarStyle
+                    hazeStyle = tabBarStyle,
+                    liquidGlass = tabBarLiquidGlass
                 )
             }
         }

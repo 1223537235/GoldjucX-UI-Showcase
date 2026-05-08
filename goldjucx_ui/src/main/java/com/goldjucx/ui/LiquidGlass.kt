@@ -75,6 +75,57 @@ data class LiquidGlassMaterial(
     }
 }
 
+object LiquidGlassDefaults {
+    var material by androidx.compose.runtime.mutableStateOf(LiquidGlassMaterial.Crystal)
+
+    private var prefs: android.content.SharedPreferences? = null
+
+    fun init(context: android.content.Context) {
+        val dps = context.createDeviceProtectedStorageContext()
+        prefs = dps.getSharedPreferences("liquid_glass_defaults", android.content.Context.MODE_PRIVATE)
+        prefs?.let { sp ->
+            if (sp.contains("blurRadius")) {
+                val loaded = LiquidGlassMaterial(
+                    blurRadius = sp.getFloat("blurRadius", 16f),
+                    saturation = sp.getFloat("saturation", 2.2f),
+                    tintStrength = sp.getFloat("tintStrength", 0.04f),
+                    refractionStrength = sp.getFloat("refractionStrength", 55f),
+                    lightAngleDeg = sp.getFloat("lightAngleDeg", 225f),
+                    specularIntensity = sp.getFloat("specularIntensity", 0.85f),
+                    specularWidth = sp.getFloat("specularWidth", 13f),
+                    specularSharpness = sp.getFloat("specularSharpness", 10f),
+                    backlightIntensity = sp.getFloat("backlightIntensity", 0.15f),
+                    brightnessBoost = sp.getFloat("brightnessBoost", 1.05f)
+                )
+                material = loaded
+                android.util.Log.d("LiquidGlass", "init loaded: blur=${loaded.blurRadius} refr=${loaded.refractionStrength}")
+            } else {
+                android.util.Log.d("LiquidGlass", "init: no saved data, using Crystal defaults")
+            }
+        }
+    }
+
+    fun applyAndSave(m: LiquidGlassMaterial) {
+        material = m
+        val editor = prefs?.edit() ?: run {
+            android.util.Log.e("LiquidGlass", "applyAndSave: prefs is null!")
+            return
+        }
+        editor.putFloat("blurRadius", m.blurRadius)
+        editor.putFloat("saturation", m.saturation)
+        editor.putFloat("tintStrength", m.tintStrength)
+        editor.putFloat("refractionStrength", m.refractionStrength)
+        editor.putFloat("lightAngleDeg", m.lightAngleDeg)
+        editor.putFloat("specularIntensity", m.specularIntensity)
+        editor.putFloat("specularWidth", m.specularWidth)
+        editor.putFloat("specularSharpness", m.specularSharpness)
+        editor.putFloat("backlightIntensity", m.backlightIntensity)
+        editor.putFloat("brightnessBoost", m.brightnessBoost)
+        val ok = editor.commit()
+        android.util.Log.d("LiquidGlass", "applyAndSave: commit=$ok blur=${m.blurRadius} refr=${m.refractionStrength}")
+    }
+}
+
 interface LiquidGlassSceneScope : BoxScope {
     fun registerGlass(id: Any, rect: Rect, cornerRadiusPx: Float)
     fun unregisterGlass(id: Any)
@@ -141,6 +192,7 @@ private class LiquidGlassSceneState {
     var sceneOffsetX by mutableFloatStateOf(0f)
     var sceneOffsetY by mutableFloatStateOf(0f)
     val glasses = mutableStateMapOf<Any, GlassInfo>()
+    var currentMaterial by mutableStateOf(LiquidGlassMaterial())
 }
 
 private class LiquidGlassSceneScopeImpl(
@@ -170,6 +222,7 @@ private fun LiquidGlassSceneImpl(
 ) {
     val state = remember { LiquidGlassSceneState() }
     val shader = remember { RuntimeShader(LIQUID_GLASS_SHADER_SRC) }
+    state.currentMaterial = material
 
     Box(
         modifier = modifier
@@ -182,6 +235,7 @@ private fun LiquidGlassSceneImpl(
             .graphicsLayer {
                 val sz = state.sceneSize
                 val glass = state.glasses.values.firstOrNull()
+                val mat = state.currentMaterial
                 if (sz.width > 0 && sz.height > 0 && glass != null) {
                     shader.setFloatUniform(
                         "resolution", sz.width.toFloat(), sz.height.toFloat()
@@ -192,7 +246,7 @@ private fun LiquidGlassSceneImpl(
                         glass.rect.right, glass.rect.bottom
                     )
                     shader.setFloatUniform("cornerRadius", glass.cornerRadiusPx)
-                    material.applyToShader(shader)
+                    mat.applyToShader(shader)
 
                     renderEffect = RenderEffect
                         .createRuntimeShaderEffect(shader, "content")

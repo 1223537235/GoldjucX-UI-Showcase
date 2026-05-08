@@ -298,9 +298,10 @@ fun SegmentedTabBar(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
     glassMode: Boolean = false,
-    glassMaterial: LiquidGlassMaterial = LiquidGlassMaterial.Thin
+    glassMaterial: LiquidGlassMaterial? = null
 ) {
     val haptic = rememberHaptic()
+    val effectiveMaterial = glassMaterial ?: LiquidGlassDefaults.material
 
     if (!glassMode) {
         Row(
@@ -344,7 +345,7 @@ fun SegmentedTabBar(
         ) {
             // Shader 层
             LiquidGlassScene(
-                material = glassMaterial,
+                material = effectiveMaterial,
                 modifier = Modifier.fillMaxSize()
             ) {
                 // 背景

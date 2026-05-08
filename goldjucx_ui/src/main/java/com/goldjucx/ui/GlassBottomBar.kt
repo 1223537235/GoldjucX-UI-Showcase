@@ -45,10 +45,11 @@ fun GlassBottomBar(
     hazeState: HazeState? = null,
     hazeStyle: HazeStyle? = null,
     liquidGlass: Boolean = false,
-    liquidGlassMaterial: LiquidGlassMaterial = LiquidGlassMaterial.Thin,
+    liquidGlassMaterial: LiquidGlassMaterial? = null,
     modifier: Modifier = Modifier
 ) {
     require(tabs.isNotEmpty())
+    val effectiveMaterial = liquidGlassMaterial ?: LiquidGlassDefaults.material
 
     val tabWidth = 82.dp
     val tabHeight = 58.dp
@@ -144,32 +145,36 @@ fun GlassBottomBar(
                     }
                 }
         ) {
-            // 磨砂背景：真实模糊或半透明白色兜底
-            Box(
-                Modifier
-                    .matchParentSize()
-                    .then(
-                        if (hazeState != null) {
-                            Modifier.hazeEffect(
-                                state = hazeState,
-                                style = hazeStyle ?: HazeStyle(
-                                    backgroundColor = Color.White,
-                                    tint = HazeTint(Color.White.copy(alpha = 0.72f)),
-                                    blurRadius = 20.dp,
-                                    noiseFactor = 0f
-                                )
-                            ) {
-                                progressive = HazeProgressive.verticalGradient(
-                                    startIntensity = 0.5f,
-                                    endIntensity = 1f
-                                )
-                                inputScale = HazeInputScale.Auto
+            if (liquidGlass) {
+                // 液态玻璃模式：背景透明，折射效果由外层 LiquidGlassScene 提供
+            } else {
+                // 磨砂背景：真实模糊或半透明白色兜底
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .then(
+                            if (hazeState != null) {
+                                Modifier.hazeEffect(
+                                    state = hazeState,
+                                    style = hazeStyle ?: HazeStyle(
+                                        backgroundColor = Color.White,
+                                        tint = HazeTint(Color.White.copy(alpha = 0.72f)),
+                                        blurRadius = 20.dp,
+                                        noiseFactor = 0f
+                                    )
+                                ) {
+                                    progressive = HazeProgressive.verticalGradient(
+                                        startIntensity = 0.5f,
+                                        endIntensity = 1f
+                                    )
+                                    inputScale = HazeInputScale.Auto
+                                }
+                            } else {
+                                Modifier.background(Color.White.copy(alpha = 0.92f))
                             }
-                        } else {
-                            Modifier.background(Color.White.copy(alpha = 0.92f))
-                        }
-                    )
-            )
+                        )
+                )
+            }
             // 描边
             Box(
                 Modifier
@@ -177,9 +182,9 @@ fun GlassBottomBar(
                     .border(2.dp, Color.White.copy(alpha = 0.8f), barShape)
             )
 
-            // 内容区 padding
+            // 内容区（指示器 + 标签）
             Box(Modifier.padding(horizontal = 6.dp, vertical = 4.dp)) {
-                // 指示器（底层）— 恢复原始深色填充风格
+                // 指示器（底层）
                 Box(
                     modifier = Modifier
                         .offset { IntOffset(indicatorX.value.roundToInt(), 0) }
@@ -187,7 +192,6 @@ fun GlassBottomBar(
                         .height(tabHeight)
                         .background(Color(0x0F000000), RoundedCornerShape(32.dp))
                 )
-
                 // Tab 标签（上层）
                 Row(
                     horizontalArrangement = Arrangement.Center,

@@ -127,6 +127,7 @@ fun DemoSettingsPageConfig(onBack: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     var enableTabs by remember { mutableStateOf(false) }
+    var tabLiquidGlass by remember { mutableStateOf(false) }
     var tabsActive by remember { mutableStateOf(false) }
     var tabSlider by remember { mutableFloatStateOf(1f / 3f) }
     var bgColorIndex by remember { mutableIntStateOf(0) }
@@ -264,6 +265,7 @@ fun DemoSettingsPageConfig(onBack: () -> Unit) {
                 }
             }) else null,
             tabs = if (tabsActive) allTabs.take(tabCount) else null,
+            tabBarLiquidGlass = tabLiquidGlass,
             backgroundColor = bgColorOptions[bgColorIndex].second
         ) { page ->
             SettingsSectionTitle(stringResource(R.string.demo_page_config_section_config))
@@ -308,6 +310,14 @@ fun DemoSettingsPageConfig(onBack: () -> Unit) {
                     value = tabSlider,
                     onValueChange = { tabSlider = it }
                 )
+                SettingsCard {
+                    SettingsSwitchRow(
+                        title = "启用液态玻璃",
+                        subtitle = "liquidGlass",
+                        checked = tabLiquidGlass,
+                        onCheckedChange = { tabLiquidGlass = it }
+                    )
+                }
             }
 
             SettingsCard {
@@ -1298,19 +1308,19 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
     val presets = remember {
         listOf(LiquidGlassMaterial.Thin, LiquidGlassMaterial.Regular, LiquidGlassMaterial.Thick)
     }
-    val crystalDefaults = LiquidGlassMaterial.Crystal
+    val savedDefaults = LiquidGlassDefaults.material
 
     var presetIndex by remember { mutableIntStateOf(3) }
-    var blurRadius by remember { mutableFloatStateOf(crystalDefaults.blurRadius) }
-    var saturation by remember { mutableFloatStateOf(crystalDefaults.saturation) }
-    var tintStrength by remember { mutableFloatStateOf(crystalDefaults.tintStrength) }
-    var refractionStrength by remember { mutableFloatStateOf(crystalDefaults.refractionStrength) }
-    var lightAngleDeg by remember { mutableFloatStateOf(crystalDefaults.lightAngleDeg) }
-    var specularIntensity by remember { mutableFloatStateOf(crystalDefaults.specularIntensity) }
-    var specularWidth by remember { mutableFloatStateOf(crystalDefaults.specularWidth) }
-    var specularSharpness by remember { mutableFloatStateOf(crystalDefaults.specularSharpness) }
-    var backlightIntensity by remember { mutableFloatStateOf(crystalDefaults.backlightIntensity) }
-    var brightnessBoost by remember { mutableFloatStateOf(crystalDefaults.brightnessBoost) }
+    var blurRadius by remember { mutableFloatStateOf(savedDefaults.blurRadius) }
+    var saturation by remember { mutableFloatStateOf(savedDefaults.saturation) }
+    var tintStrength by remember { mutableFloatStateOf(savedDefaults.tintStrength) }
+    var refractionStrength by remember { mutableFloatStateOf(savedDefaults.refractionStrength) }
+    var lightAngleDeg by remember { mutableFloatStateOf(savedDefaults.lightAngleDeg) }
+    var specularIntensity by remember { mutableFloatStateOf(savedDefaults.specularIntensity) }
+    var specularWidth by remember { mutableFloatStateOf(savedDefaults.specularWidth) }
+    var specularSharpness by remember { mutableFloatStateOf(savedDefaults.specularSharpness) }
+    var backlightIntensity by remember { mutableFloatStateOf(savedDefaults.backlightIntensity) }
+    var brightnessBoost by remember { mutableFloatStateOf(savedDefaults.brightnessBoost) }
 
     fun syncFromPreset(m: LiquidGlassMaterial) {
         blurRadius = m.blurRadius
@@ -1471,7 +1481,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${blurRadius.toInt()} px",
                                 value = blurRadius / 80f,
                                 onValueChange = { blurRadius = it * 80f; presetIndex = 3 },
-                                onReset = { blurRadius = crystalDefaults.blurRadius; presetIndex = 3 }
+                                onReset = { blurRadius = savedDefaults.blurRadius; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1479,7 +1489,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.2f".format(saturation)}x",
                                 value = (saturation - 0.5f) / 2.5f,
                                 onValueChange = { saturation = it * 2.5f + 0.5f; presetIndex = 3 },
-                                onReset = { saturation = crystalDefaults.saturation; presetIndex = 3 }
+                                onReset = { saturation = savedDefaults.saturation; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1487,7 +1497,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.2f".format(tintStrength)}",
                                 value = tintStrength / 0.5f,
                                 onValueChange = { tintStrength = it * 0.5f; presetIndex = 3 },
-                                onReset = { tintStrength = crystalDefaults.tintStrength; presetIndex = 3 }
+                                onReset = { tintStrength = savedDefaults.tintStrength; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1495,7 +1505,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${refractionStrength.toInt()}",
                                 value = refractionStrength / 100f,
                                 onValueChange = { refractionStrength = it * 100f; presetIndex = 3 },
-                                onReset = { refractionStrength = crystalDefaults.refractionStrength; presetIndex = 3 }
+                                onReset = { refractionStrength = savedDefaults.refractionStrength; presetIndex = 3 }
                             )
                         }
                     }
@@ -1508,7 +1518,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${lightAngleDeg.toInt()}°",
                                 value = lightAngleDeg / 360f,
                                 onValueChange = { lightAngleDeg = it * 360f; presetIndex = 3 },
-                                onReset = { lightAngleDeg = crystalDefaults.lightAngleDeg; presetIndex = 3 }
+                                onReset = { lightAngleDeg = savedDefaults.lightAngleDeg; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1516,7 +1526,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.2f".format(specularIntensity)}",
                                 value = specularIntensity / 1.5f,
                                 onValueChange = { specularIntensity = it * 1.5f; presetIndex = 3 },
-                                onReset = { specularIntensity = crystalDefaults.specularIntensity; presetIndex = 3 }
+                                onReset = { specularIntensity = savedDefaults.specularIntensity; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1524,7 +1534,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${specularWidth.toInt()} px",
                                 value = (specularWidth - 1f) / 29f,
                                 onValueChange = { specularWidth = it * 29f + 1f; presetIndex = 3 },
-                                onReset = { specularWidth = crystalDefaults.specularWidth; presetIndex = 3 }
+                                onReset = { specularWidth = savedDefaults.specularWidth; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1532,7 +1542,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.1f".format(specularSharpness)}",
                                 value = (specularSharpness - 1f) / 19f,
                                 onValueChange = { specularSharpness = it * 19f + 1f; presetIndex = 3 },
-                                onReset = { specularSharpness = crystalDefaults.specularSharpness; presetIndex = 3 }
+                                onReset = { specularSharpness = savedDefaults.specularSharpness; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1540,7 +1550,7 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.2f".format(backlightIntensity)}",
                                 value = backlightIntensity / 0.5f,
                                 onValueChange = { backlightIntensity = it * 0.5f; presetIndex = 3 },
-                                onReset = { backlightIntensity = crystalDefaults.backlightIntensity; presetIndex = 3 }
+                                onReset = { backlightIntensity = savedDefaults.backlightIntensity; presetIndex = 3 }
                             )
                             Spacer(Modifier.height(16.dp))
                             SliderSettingRow(
@@ -1548,10 +1558,16 @@ fun DemoMaterialPreview(onBack: () -> Unit) {
                                 subtitle = "${"%.2f".format(brightnessBoost)}x",
                                 value = (brightnessBoost - 0.9f) / 0.3f,
                                 onValueChange = { brightnessBoost = it * 0.3f + 0.9f; presetIndex = 3 },
-                                onReset = { brightnessBoost = crystalDefaults.brightnessBoost; presetIndex = 3 }
+                                onReset = { brightnessBoost = savedDefaults.brightnessBoost; presetIndex = 3 }
                             )
                         }
                     }
+                    Spacer(Modifier.height(24.dp))
+                    PrimaryButton(
+                        text = "设为全局默认材质",
+                        onClick = { LiquidGlassDefaults.applyAndSave(material) },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
                     Spacer(Modifier.height(40.dp))
                 }
             }
